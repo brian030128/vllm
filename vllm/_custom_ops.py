@@ -737,6 +737,46 @@ def cutlass_scaled_fp4_mm(
     return out
 
 
+def cutlass_scaled_mm_supports_flipquant(cuda_device_capability: int) -> bool:
+    return torch.ops._C.cutlass_scaled_mm_supports_flipquant(cuda_device_capability)
+
+
+def cutlass_scaled_flipquant_mm(
+    a: torch.Tensor,
+    b: torch.Tensor,
+    block_scale_a: torch.Tensor,
+    block_scale_b: torch.Tensor,
+    tile_map: torch.Tensor,
+    alpha: torch.Tensor,
+    out_dtype: torch.dtype,
+) -> torch.Tensor:
+    """FlipQuant (MIXFP4) GEMM: `cutlass_scaled_fp4_mm` with a per-tile weight
+    format.
+
+    Args:
+        a: Activation E2M1 codes `[M, K // 2]`, uint8.
+        b: Weight codes `[N, K // 2]`, uint8, E2M1 or E0M3 per tile.
+        block_scale_a: Swizzled UE4M3 scales of `a`, as from `scaled_fp4_quant`.
+        block_scale_b: Swizzled UE4M3 scales of `b`.
+        tile_map: int32 `[ceil(N / 256), ceil(K / 2048)]`; bit `j` of word `w`
+            in row `r` is 1 when weight rows `[256 r, 256 r + 256)` of K64
+            block `32 w + j` are E0M3.
+        alpha: Scalar float32 output scale.
+        out_dtype: `torch.float16` or `torch.bfloat16`.
+
+    Returns:
+        `alpha * a @ b.T` of shape `[M, N]`.
+
+    """
+    assert a.ndim == 2 and b.ndim == 2
+    m, n = a.shape[0], b.shape[0]
+    out = torch.empty((m, n), dtype=out_dtype, device=a.device)
+    torch.ops._C.cutlass_scaled_flipquant_mm(
+        out, a, b, block_scale_a, block_scale_b, tile_map, alpha
+    )
+    return out
+
+
 def cutlass_scaled_mm_supports_fp8(cuda_device_capability: int) -> bool:
     return torch.ops._C.cutlass_scaled_mm_supports_fp8(cuda_device_capability)
 

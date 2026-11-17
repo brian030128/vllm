@@ -888,6 +888,9 @@ steps:
   - tests/kernels/attention/test_minimax_m3_msa_cutlass_sparse_decode.py
   - tests/kernels/attention/test_cache.py
   - tests/kernels/quantization/nvfp4_utils.py
+  - csrc/quantization/fp4/flipquant_scaled_mm_kernels.cu
+  - csrc/quantization/fp4/flipquant_sm100_mma.hpp
+  - tests/kernels/quantization/test_flipquant_scaled_mm.py
   - tests/kernels/test_fused_minimax_m3_qknorm_rope_kv_insert.py
   - tests/kernels/mamba/test_gdn_prefill_cutedsl.py
   - tests/kernels/test_bf16x3_router_gemm_cutedsl.py
@@ -926,6 +929,7 @@ steps:
     - pytest -v -s tests/kernels/quantization/test_block_fp8.py::test_w8a8_block_fp8_cutlass_matmul
     - pytest -v -s tests/kernels/quantization/test_nvfp4_quant.py
     - pytest -v -s tests/kernels/quantization/test_nvfp4_scaled_mm.py
+    - pytest -v -s tests/kernels/quantization/test_flipquant_scaled_mm.py
     - pytest -v -s tests/kernels/moe/test_flashinfer.py
     - pytest -v -s tests/kernels/moe/test_trtllm_nvfp4_moe.py
     - pytest -v -s tests/kernels/mamba/test_gdn_prefill_cutedsl.py

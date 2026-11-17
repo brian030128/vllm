@@ -192,6 +192,13 @@ STABLE_TORCH_LIBRARY_FRAGMENT(_C, ops) {
       "                      Tensor block_scale_a, Tensor block_scale_b,"
       "                      Tensor alpha, Tensor? bias=None) -> ()");
 
+  // CUTLASS FlipQuant GEMM: NVFP4 operands, each 256x64 tile of b decoded as
+  // E2M1 or E0M3 according to tile_map.
+  ops.def(
+      "cutlass_scaled_flipquant_mm(Tensor! out, Tensor a, Tensor b,"
+      "                            Tensor block_scale_a, Tensor block_scale_b,"
+      "                            Tensor tile_map, Tensor alpha) -> ()");
+
   // cutlass nvfp4 block scaled group GEMM
   ops.def(
       "cutlass_fp4_group_mm(Tensor! out, Tensor a, Tensor b,"
@@ -260,6 +267,9 @@ STABLE_TORCH_LIBRARY_FRAGMENT(_C, ops) {
   // Check if cutlass_scaled_mm_fp4 is supported for CUDA devices
   // of the given capability
   ops.def("cutlass_scaled_mm_supports_fp4(int cuda_device_capability) -> bool");
+  ops.def(
+      "cutlass_scaled_mm_supports_flipquant(int cuda_device_capability) -> "
+      "bool");
 
   // CUTLASS w4a8 GEMM
   ops.def(
@@ -832,6 +842,8 @@ STABLE_TORCH_LIBRARY_IMPL(_C, CUDA, ops) {
 
   // FP4/NVFP4 ops
   ops.impl("cutlass_scaled_fp4_mm", TORCH_BOX(&cutlass_scaled_fp4_mm));
+  ops.impl("cutlass_scaled_flipquant_mm",
+           TORCH_BOX(&cutlass_scaled_flipquant_mm));
   ops.impl("scaled_fp4_quant", TORCH_BOX(&scaled_fp4_quant_func));
   ops.impl("scaled_fp4_quant.out", TORCH_BOX(&scaled_fp4_quant_out));
   ops.impl("scaled_fp4_experts_quant", TORCH_BOX(&scaled_fp4_experts_quant));
@@ -1012,6 +1024,8 @@ STABLE_TORCH_LIBRARY_IMPL(_C, CompositeExplicitAutograd, ops) {
            TORCH_BOX(&cutlass_scaled_mm_supports_block_fp8));
   ops.impl("cutlass_scaled_mm_supports_fp4",
            TORCH_BOX(&cutlass_scaled_mm_supports_fp4));
+  ops.impl("cutlass_scaled_mm_supports_flipquant",
+           TORCH_BOX(&cutlass_scaled_mm_supports_flipquant));
 #endif
 }
 

@@ -87,3 +87,48 @@ bool cutlass_scaled_mm_supports_fp4(int64_t cuda_device_capability) {
 #endif
   return false;
 }
+
+#if defined ENABLE_NVFP4_SM100 && ENABLE_NVFP4_SM100
+void cutlass_scaled_flipquant_mm_sm100a(torch::stable::Tensor& D,
+                                        torch::stable::Tensor const& A,
+                                        torch::stable::Tensor const& B,
+                                        torch::stable::Tensor const& A_sf,
+                                        torch::stable::Tensor const& B_sf,
+                                        torch::stable::Tensor const& tile_map,
+                                        torch::stable::Tensor const& alpha);
+#endif
+
+// E0M3 is format enum 0 of tcgen05.mma kind::mxf4nvf4, which is only
+// validated on SM100 (B200/GB200).
+void cutlass_scaled_flipquant_mm(torch::stable::Tensor& D,
+                                 torch::stable::Tensor const& A,
+                                 torch::stable::Tensor const& B,
+                                 torch::stable::Tensor const& A_sf,
+                                 torch::stable::Tensor const& B_sf,
+                                 torch::stable::Tensor const& tile_map,
+                                 torch::stable::Tensor const& alpha) {
+  const torch::stable::accelerator::DeviceGuard device_guard(
+      A.get_device_index());
+  const int32_t sm = get_sm_version_num();
+
+#if defined(ENABLE_NVFP4_SM100) && ENABLE_NVFP4_SM100
+  if (sm == 100) {
+    cutlass_scaled_flipquant_mm_sm100a(D, A, B, A_sf, B_sf, tile_map, alpha);
+    return;
+  }
+#endif
+
+  STD_TORCH_CHECK_NOT_IMPLEMENTED(
+      false, "No compiled flipquant mm kernel for SM ", sm,
+      ". Requires SM100 and a build with CUDA >= 12.8.");
+}
+
+bool cutlass_scaled_mm_supports_flipquant(int64_t cuda_device_capability) {
+#if defined(ENABLE_NVFP4_SM100) && ENABLE_NVFP4_SM100
+  int runtimeVersion;
+  cudaRuntimeGetVersion(&runtimeVersion);
+  return runtimeVersion >= 12080 && cuda_device_capability == 100;
+#else
+  return false;
+#endif
+}

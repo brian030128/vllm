@@ -1043,6 +1043,7 @@ if(VLLM_GPU_LANG STREQUAL "CUDA" OR VLLM_GPU_LANG STREQUAL "HIP")
       "csrc/quantization/fp4/activation_nvfp4_quant_fusion_kernels.cu"
       "csrc/quantization/fp4/nvfp4_experts_quant.cu"
       "csrc/quantization/fp4/nvfp4_scaled_mm_kernels.cu"
+      "csrc/quantization/fp4/flipquant_scaled_mm_kernels.cu"
       "csrc/quantization/fp4/nvfp4_blockwise_moe_kernel.cu"
       "csrc/quantization/fp4/mxfp4_experts_quant.cu"
       "csrc/quantization/fp4/mxfp4_blockwise_moe_kernel.cu"

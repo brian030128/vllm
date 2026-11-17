@@ -113,6 +113,16 @@ void cutlass_scaled_fp4_mm(torch::stable::Tensor& D,
                            torch::stable::Tensor const& alpha,
                            std::optional<torch::stable::Tensor> const& bias);
 
+bool cutlass_scaled_mm_supports_flipquant(int64_t cuda_device_capability);
+
+void cutlass_scaled_flipquant_mm(torch::stable::Tensor& D,
+                                 torch::stable::Tensor const& A,
+                                 torch::stable::Tensor const& B,
+                                 torch::stable::Tensor const& A_sf,
+                                 torch::stable::Tensor const& B_sf,
+                                 torch::stable::Tensor const& tile_map,
+                                 torch::stable::Tensor const& alpha);
+
 void cutlass_fp4_group_mm(torch::stable::Tensor& output,
                           const torch::stable::Tensor& a,
                           const torch::stable::Tensor& b,
